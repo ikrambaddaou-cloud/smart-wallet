@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Smart Wallet</title>
+    <style>
+        :root {
+            --primary-blue: #4a6cf7;
+            --hover-blue: #3b5bdb;
+            --bg-light: #f4f7fe;
+            --text-dark: #2d3436;
+            --gray-text: #636e72;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .signup-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-blue);
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        /* Style des lignes du formulaire Django */
+        form p {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #edf2f7;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.1);
+        }
+
+        /* Cache ou stylise les textes d'aide de Django (les listes à puces) */
+        .helptext, .helptext ul {
+            font-size: 11px;
+            color: var(--gray-text);
+            margin-top: 5px;
+            padding-left: 15px;
+            line-height: 1.4;
+        }
+
+        /* Masquer les listes de contraintes trop longues pour un look épuré */
+        ul.helptext, li span.helptext {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-signup:hover {
+            background: var(--hover-blue);
+            transform: translateY(-1px);
+        }
+
+        .btn-signup:active {
+            transform: translateY(1px);
+        }
+
+        .login-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: var(--gray-text);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .login-link:hover {
+            color: var(--primary-blue);
+            text-decoration: underline;
+        }
+
+        /* Message d'erreur */
+        .errorlist {
+            color: #ff4757;
+            font-size: 13px;
+            padding: 0;
+            list-style: none;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h2>Create Account</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-signup">Sign Up</button>
+        </form>
+        <a href="{% url 'login' %}" class="login-link">Already have an account? Login</a>
+    </div>
+</body>
+</html>

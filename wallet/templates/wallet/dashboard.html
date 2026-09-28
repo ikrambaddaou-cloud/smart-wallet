@@ -1,0 +1,481 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Wallet - Analytics Dashboard</title>
+    <link rel="stylesheet" href="{% static 'wallet/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CONFIGURATION FULL PAGE / RESET --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fb 0%, #e4ecf7 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            padding: 30px;
+        }
+        .full-page-container {
+            width: 100%;
+            max-width: 1800px; /* Grand angle pour occuper tout l'écran */
+            margin: 0 auto;
+        }
+
+        /* --- HEADER PRINCIPAL --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4a6cf7, #2ed573);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-logout {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-logout:hover {
+            background: #e0404e;
+            transform: translateY(-2px);
+        }
+
+        /* --- LAYOUT GLOBAL EN 2 COLONNES FULL LARGEUR --- */
+        .dashboard-layout {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+        }
+        
+        /* Colonne Gauche : Opérations & Historique (60% de l'écran) */
+        .left-column {
+            flex: 1.4;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        /* Colonne Droite : Métriques IA Fixes (40% de l'écran) */
+        .right-column {
+            flex: 1;
+            min-width: 400px;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 30px; /* Colle parfaitement au haut de la page au scroll */
+            height: calc(100vh - 150px); /* Hauteur fixe ajustée au viewport */
+            z-index: 10;
+        }
+
+        /* --- COMPOSANTS DE CARTES COMMUNS --- */
+        .glass-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eef2f7;
+            transition: transform 0.3s ease;
+        }
+
+        /* Formulaire configuration solde */
+        .balance-setup-section {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            background: linear-gradient(90deg, #ffffff, #f9fbfd);
+        }
+        .btn-update-balance {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-update-balance:hover {
+            background: #26af5f;
+            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+        }
+
+        /* Grille des Stats Flash */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .stat-card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #eef2f7;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            margin-top: 10px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* --- ALERTE CONSEILLER IA --- */
+        .ai-alert {
+            padding: 20px;
+            border-radius: 14px;
+            font-weight: 500;
+            border-left: 6px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            line-height: 1.5;
+        }
+        .ai-alert-success { background-color: #e6fffa; color: #234e52; border-left-color: #319795; }
+        .ai-alert-warning { background-color: #fffaf0; color: #744210; border-left-color: #dd6b20; }
+        .ai-alert-danger { background-color: #fff5f5; color: #742a2a; border-left-color: #e53e3e; }
+
+        /* --- COULEURS THÉMATIQUES --- */
+        .text-primary { color: #4a6cf7; }
+        .text-success { color: #2ed573; }
+        .text-warning { color: #f1c40f; }
+        .text-danger { color: #ff4757; }
+        .text-dark { color: #1a202c; }
+
+        /* --- FORMULAIRE D'AJOUT --- */
+        .form-section {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            background: #ffffff;
+        }
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .input-group input, .input-group select {
+            padding: 12px 16px;
+            border: 1px solid #cbd5e0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s ease;
+            background-color: #f8fafc;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #4a6cf7;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+        }
+        .btn-add {
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-add:hover {
+            background: #3b5bdb;
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
+        }
+
+        /* --- LISTE DES TRANSACTIONS RÉCENTES --- */
+        .transaction-list-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding-right: 5px;
+        }
+        /* Style barre de défilement */
+        .transaction-list-wrapper::-webkit-scrollbar { width: 6px; }
+        .transaction-list-wrapper::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #edf2f7;
+            transition: all 0.2s ease;
+        }
+        .transaction-item:hover {
+            transform: translateX(5px);
+            border-color: #e2e8f0;
+            background: #fdfdfd;
+        }
+        .category-tag {
+            background: #e1e7ff;
+            color: #4a6cf7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* --- METRIQUES DE LA COLONNE FIXED DROITE --- */
+        .ai-metrics-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #dce4ff;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        }
+        .accuracy-section {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid #edf2f7;
+            margin-bottom: 25px;
+        }
+        .accuracy-bar-container {
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 14px;
+            width: 100%;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .accuracy-bar-fill {
+            background: linear-gradient(90deg, #4a6cf7, #2ed573);
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Conteneur de tableau responsive à l'intérieur de la carte */
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .matrix-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12px;
+        }
+        .matrix-table th, .matrix-table td {
+            border-right: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+            padding: 10px 6px;
+            text-align: center;
+        }
+        .matrix-table th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            border-top: 1px solid #edf2f7;
+        }
+        .matrix-table th:first-child, .matrix-table td:first-child {
+            border-left: 1px solid #edf2f7;
+        }
+        .matrix-table th:first-child { border-top-left-radius: 8px; }
+        .matrix-table th:last-child { border-top-right-radius: 8px; }
+        
+        .matrix-diagonal {
+            background-color: #c6f6d5 !important;
+            font-weight: 700;
+            color: #22543d;
+        }
+
+        /* --- RESPONSIVE GENERAL --- */
+        @media (max-width: 1200px) {
+            .dashboard-layout { flex-direction: column; }
+            .right-column { position: static; width: 100%; height: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="full-page-container">
+        
+        <header>
+            <h1>Smart Wallet System Analytics</h1>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout">Sign Out</button>
+            </form>
+        </header>
+
+        <div class="dashboard-layout">
+            
+            <div class="left-column">
+                
+                <div class="glass-card balance-setup-section">
+                    <form method="post" style="display: flex; width: 100%; align-items: flex-end; gap: 20px;">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <label>Update Initial System Balance (DH)</label>
+                            <input type="number" name="solde_initial" value="{{ solde_initial }}" step="0.01" required placeholder="5000.00">
+                        </div>
+                        <button type="submit" name="update_balance" class="btn-update-balance">Update Balance</button>
+                    </form>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Monthly Expenses</p>
+                        <p class="stat-value text-primary">{{ current_month_total }} DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Evolution Vs Last Month</p>
+                        <p class="stat-value {% if difference > 0 %}text-danger{% else %}text-success{% endif %}">
+                            {% if difference > 0 %}+{% endif %}{{ difference }} DH
+                        </p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Available Liquidity</p>
+                        <p class="stat-value text-dark">{{ solde_actuel }} DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Predictive Balance (End of Month)</p>
+                        <p class="stat-value {% if status_color == 'danger' %}text-danger{% elif status_color == 'warning' %}text-warning{% else %}text-success{% endif %}">
+                            {{ solde_estime_fin_mois }} DH
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ai-alert ai-alert-{{ status_color }}">
+                    <span><strong>💡 Smart Advisor:</strong> {{ ai_balance_status }}</span>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: 600;">Record New Asset / Transaction Flow</h3>
+                    <form method="post" class="form-section">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <label>Amount (DH)</label>
+                            <input type="number" name="amount" required step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="input-group">
+                            <label>Target Category</label>
+                            <select name="category" required>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Home Improvement">Home Improvement</option>
+                                <option value="Fast Food">Fast Food</option>
+                                <option value="Restaurants">Restaurants</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Groceries">Groceries</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-add">Commit Transaction</button>
+                    </form>
+                </div>
+
+                <div class="glass-card" style="flex: 1;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #1a202c;">Real-time Transaction Ledger</h3>
+                    <div class="transaction-list-wrapper">
+                        {% for tx in transactions %}
+                        <div class="transaction-item">
+                            <div>
+                                <span class="category-tag">{{ tx.category }}</span>
+                                <div style="font-size: 12px; color: #a0aec0; margin-top: 6px; font-weight: 500;">{{ tx.timestamp|date:"d M Y @ H:i" }}</div>
+                            </div>
+                            <div style="font-weight: 700; font-size: 16px; color: #2d3748;">{{ tx.amount }} DH</div>
+                        </div>
+                        {% empty %}
+                        <p style="text-align: center; color: #a0aec0; padding: 40px 0; font-weight: 500;">No records present for this node.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="glass-card ai-metrics-card">
+                    <h3 style="margin-bottom: 20px; font-size: 18px; font-weight: 700; color: #1a202c; display: flex; align-items: center; gap: 8px;">
+                        <span>🧠 AI Engine Performance</span>
+                    </h3>
+                    
+                    <div class="accuracy-section">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; color: #4a5568;">
+                            <span>CLASSIFICATION ACCURACY SCORE</span>
+                            <span class="text-primary" style="font-size: 15px;">{{ accuracy }} %</span>
+                        </div>
+                        <div class="accuracy-bar-container">
+                            <div class="accuracy-bar-fill" style="width: {{ accuracy }}%;"></div>
+                        </div>
+                    </div>
+
+                    <h4 style="color: #4a5568; font-size: 14px; font-weight: 600; margin-bottom: 4px;">Confusion Matrix Visualization</h4>
+                    <p style="font-size: 11px; color: #718096; margin-bottom: 15px;">Y-Axis: Ground Truth (Réel) | X-Axis: Model Prediction (Prédit)</p>
+                    
+                    <div class="table-container">
+                        {% if matrix_data %}
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th style="background-color: #edf2f7; font-weight: 700;">R \ P</th>
+                                    {% for label in matrix_labels %}
+                                    <th title="{{ label }}" style="text-transform: uppercase; font-size: 10px;">{{ label|slice:":4" }}.</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in matrix_data %}
+                                <tr>
+                                    <td style="font-weight: 700; background-color: #f7fafc; text-align: left; color: #4a5568;" title="{{ row.label }}">
+                                        {{ row.label|slice:":5" }}.
+                                    </td>
+                                    {% for val in row.values %}
+                                        <td class="{% if forloop.parentloop.counter == forloop.counter %}matrix-diagonal{% endif %}" style="color: #4a5568; font-weight: 500;">
+                                            {{ val }}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p style="text-align: center; color: #a0aec0; font-size: 12px; margin-top: 40px; font-weight: 500;">Awaiting pipeline data matrix compilation...</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div> </div>
+</body>
+</html>
